@@ -1,0 +1,16 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Segredos — NUNCA commitar
+.env
+
+# Corpus documental (PDFs de cliente / LGPD) — pasta versionada vazia
+docs/*
+!docs/.gitkeep
+
+# Sistema / build
+.DS_Store
+*.log

@@ -1,0 +1,77 @@
+[
+  {
+    "question": "Qual é o objeto do contrato CT-EXEMPLO-001?",
+    "ground_truth": "Desenvolvimento de site institucional e catálogo digital em código próprio (Next.js, sem template), com apresentação das marcas, catálogo de produtos, formulário de contato com triagem de leads e otimização técnica para mecanismos de busca (SEO técnico e local).",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Qual o prazo-alvo de entrega para o go-live?",
+    "ground_truth": "15 (quinze) dias corridos a partir do início.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Qual o valor da Taxa de Adjudicação e ela é reembolsável?",
+    "ground_truth": "R$ 3.000,00 (30% do total), paga na assinatura, e não é reembolsável em qualquer hipótese.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Qual o valor total do contrato e como é dividido o pagamento?",
+    "ground_truth": "R$ 10.000,00, no modelo 30/60/10: Taxa de Adjudicação de R$ 3.000,00 na assinatura, R$ 6.000,00 na entrega parcial e R$ 1.000,00 no go-live.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Quais as formas de pagamento aceitas no contrato?",
+    "ground_truth": "PIX e transferência bancária.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Qual a penalidade por atraso no pagamento de uma parcela?",
+    "ground_truth": "Multa de 2% sobre o valor devido, mais juros de mora de 1% ao mês e correção pelo IPCA, calculados pro rata die.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Quanto custa a manutenção mensal e ela é obrigatória?",
+    "ground_truth": "R$ 400,00 por mês, de contratação facultativa. A não contratação não afeta a entrega nem a garantia.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Qual o valor da hora avulsa para serviços fora do escopo?",
+    "ground_truth": "R$ 150,00 por hora.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "A Contratada garante a posição (ranking) nos resultados de busca do Google?",
+    "ground_truth": "Não. Garante a indexação e a aptidão de aparecer, mas não o ranking. O SEO é obrigação de meio, não de resultado.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Qual o prazo de garantia para correção de defeitos (bugs)?",
+    "ground_truth": "90 (noventa) dias contados do go-live, mais 15 dias de ajustes cosméticos após o go-live.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Qual o foro eleito e a legislação aplicável ao contrato?",
+    "ground_truth": "O foro da comarca de Santos/SP, nos termos do Código Civil Brasileiro (Lei nº 10.406/2002).",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "A quem pertence o código-fonte após a entrega?",
+    "ground_truth": "À Contratante, após a quitação integral do valor contratado, quando a propriedade intelectual do código e dos ativos é transferida.",
+    "fonte": "CONTRATO-EXEMPLO-001.pdf"
+  },
+  {
+    "question": "Qual o investimento previsto na proposta comercial?",
+    "ground_truth": "R$ 10.000,00, no modelo 30/60/10, com manutenção mensal opcional de R$ 400,00.",
+    "fonte": "PROPOSTA-EXEMPLO-002.pdf"
+  },
+  {
+    "question": "Quando foi o go-live do projeto?",
+    "ground_truth": "Em 15/03/2026.",
+    "fonte": "TERMO-EXEMPLO-003.pdf"
+  },
+  {
+    "question": "A quem pertencem o domínio e a hospedagem do site?",
+    "ground_truth": "À Contratante (Aurora Comércio). A hospedagem (Vercel) é operada tecnicamente pela Donadão Labs na condição de colaboradora, mas em conta de titularidade da Contratante.",
+    "fonte": "TERMO-EXEMPLO-003.pdf"
+  }
+]
