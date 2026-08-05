@@ -2,6 +2,23 @@
 
 Produto de IA da Donadão Labs. Versionamento por revisões (`rev-X.Y`).
 
+## [rev-1.2] — 2026-08-05
+
+### Keep-alive do Supabase (o banco pausou e derrubou a avaliação)
+- **Causa confirmada:** projeto Supabase free pausado por inatividade. Diagnóstico por
+  NXDOMAIN (`curl` exit 6 no subdomínio) e `FATAL (ENOTFOUND) tenant/user not found` no
+  pooler. Sem deploy, este projeto não tem tráfego orgânico para segurar o banco.
+- **`.github/workflows/keep-alive.yml` (novo):** UPSERT diário (06:00 UTC) em
+  `public.keep_alive`, com verificação do retorno (`grep pinged_at`) para o job ficar
+  VERMELHO quando não gravar. Job verde sem gravação é o pior modo de falha.
+- **`keep_alive.sql` (novo):** tabela-sentinela de uma linha. **Variante anon**, com as três
+  policies (select, insert, update), porque este repositório é PÚBLICO e a `service_role`
+  jamais pode circular por aqui. Sem a policy de SELECT, o upsert não resolve o conflito.
+- **`KEEP_ALIVE.md` (novo):** diagnóstico, setup e o limite que o keep-alive não resolve
+  (teto de projetos ativos por organização free).
+- **Pendente do Vinicius:** restaurar o projeto no painel, rodar o SQL e gerar a anon key.
+  O secret `SUPABASE_URL` já está gravado no repositório; falta `SUPABASE_KEY`.
+
 ## [rev-1.1] — 2026-08-05
 
 ### Honestidade técnica: precisão do README e medição da abstenção

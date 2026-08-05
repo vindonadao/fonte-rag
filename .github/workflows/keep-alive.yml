@@ -1,0 +1,59 @@
+# ============================================================
+# Donadão Labs · keep-alive (Supabase free tier) — Fonte
+# ------------------------------------------------------------
+# Mantém o banco ativo gravando de verdade na tabela-sentinela
+# public.keep_alive todo dia. O free do Supabase pausa projetos
+# após ~7 dias sem atividade que chegue no Postgres; escrita
+# diária dá 7 gravações dentro da janela, sem ambiguidade.
+#
+# Por que GitHub Actions (e não cron da Vercel ou pg_cron):
+#   - É grátis e independe da app estar no ar. Este projeto nem
+#     tem deploy: a prova pública é o vídeo, então não existe
+#     tráfego orgânico nenhum para segurar o banco.
+#   - O free da Vercel só permite 1 cron job no total.
+#   - pg_cron roda DENTRO do banco e não conta como atividade
+#     "de entrada" para o resource manager do Supabase.
+#   - Se o ping falhar, o job fica VERMELHO e você é avisado.
+#
+# ⚠️ CHAVE ANON, NUNCA service_role: este repositório é PÚBLICO.
+# A anon só alcança a tabela keep_alive, que não tem dado nenhum.
+#
+# SETUP (uma vez):
+#   1. Rode keep_alive.sql no SQL Editor do projeto Supabase.
+#   2. Settings -> Secrets and variables -> Actions:
+#        SUPABASE_URL  ->  https://SEU-REF.supabase.co
+#        SUPABASE_KEY  ->  anon / publishable key (Settings -> API)
+#   3. Aba Actions -> keep-supabase-alive -> "Run workflow" e
+#      confira no log a linha `resposta: [{"id":1,...}]`.
+#      Job verde sem essa linha seria falso positivo.
+# ============================================================
+
+name: keep-supabase-alive
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # diariamente, 06:00 UTC
+  workflow_dispatch: {}      # permite rodar manualmente para testar
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          # UPSERT (não PATCH): cria a linha id=1 se não existir e atualiza se existir.
+          # O PATCH ?id=eq.1 exigia policy SELECT p/ "ver" a linha; sem ela o filtro
+          # casava 0 linhas e nada gravava (job VERDE, banco parado). O upsert não
+          # depende de filtro e return=representation confirma a gravação; grep vazio
+          # -> job VERMELHO, aviso antes de o banco pausar.
+          resp=$(curl -fsS -X POST "$SUPABASE_URL/rest/v1/keep_alive" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates,return=representation" \
+            -d "{\"id\":1,\"pinged_at\":\"$(date -u +%FT%TZ)\"}")
+          echo "resposta: $resp"
+          echo "$resp" | grep -q "pinged_at" || { echo "::error::keep-alive NAO gravou a linha"; exit 1; }
