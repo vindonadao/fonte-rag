@@ -2,6 +2,28 @@
 
 Produto de IA da Donadão Labs. Versionamento por revisões (`rev-X.Y`).
 
+## [rev-1.1] — 2026-08-05
+
+### Honestidade técnica: precisão do README e medição da abstenção
+- **`eval/abstention_set.json` (novo):** 6 perguntas plausíveis num acervo contratual
+  (rescisão, LGPD, confidencialidade, SLA de suporte, reajuste, contato do cliente) que
+  comprovadamente não têm resposta nos três documentos. Fecha o buraco entre o que o
+  produto promete (o "Não encontrei") e o que a avaliação media (só o acerto).
+- **`eval/run.py`:** roda o conjunto de abstenção junto do golden set, com critério
+  binário e verificável (a resposta contém a frase de recusa?), sem LLM-juiz.
+  ⚠️ Score ainda **não medido**: o Supabase do projeto está inacessível
+  (`tenant/user not found`, sintoma de projeto pausado). Rodar `make eval` quando voltar.
+- **README, correção de precisão:** `chunk_size` 1000 é **caractere, não token**, o que
+  dá perto de 250 tokens em português. A justificativa anterior ("grande demais dilui")
+  defendia um número que está na faixa baixa do usual. Corrigido.
+- **README, escala declarada:** corpus de 9 chunks com `k=4` entrega quase metade do
+  acervo por pergunta, e é isso que sustenta scores de 0.94 a 0.98. Declarado junto dos
+  resultados, para o número ser lido na escala certa.
+- **README, limitações ampliadas:** ausência de índice vetorial e o motivo real
+  (`langchain-postgres` cria `vector` sem dimensão e o pgvector recusa indexar, erro
+  `column does not have dimensions`, reproduzido); citação em texto livre sem validação
+  programática contra os chunks recuperados; ausência de threshold de similaridade.
+
 ## [rev-1.0] — 2026-07-27
 
 ### Release público — histórico consolidado

@@ -1,0 +1,26 @@
+[
+  {
+    "question": "Qual a multa devida em caso de rescisão antecipada do contrato pela Contratante?",
+    "motivo": "O contrato não tem cláusula de rescisão. Trata multa apenas por atraso de pagamento."
+  },
+  {
+    "question": "Como é feito o tratamento de dados pessoais e qual a política de LGPD do projeto?",
+    "motivo": "Nenhum dos três documentos menciona LGPD ou tratamento de dados pessoais."
+  },
+  {
+    "question": "Existe cláusula de confidencialidade ou NDA entre as partes?",
+    "motivo": "Não há cláusula de confidencialidade no contrato."
+  },
+  {
+    "question": "Qual o SLA de tempo de resposta para chamados de suporte?",
+    "motivo": "O corpus define teto de horas na manutenção, mas nunca prazo de resposta a chamado."
+  },
+  {
+    "question": "A manutenção mensal sofre reajuste anual? Por qual índice?",
+    "motivo": "O IPCA aparece só como correção de parcela em atraso, nunca como reajuste da manutenção."
+  },
+  {
+    "question": "Qual o e-mail e o telefone de contato da Aurora Comércio Ltda?",
+    "motivo": "A qualificação traz CNPJ e endereço, nunca e-mail ou telefone."
+  }
+]

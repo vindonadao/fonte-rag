@@ -15,6 +15,11 @@ quatro métricas — as MESMAS do RAGAS — são computadas aqui com um LLM-juiz
 
 Diagnóstico que vale ouro: faithfulness baixo = problema de GERAÇÃO/prompt;
 context_precision/recall baixo = problema de RETRIEVAL (chunk, k, embedding).
+
+Além do golden set, roda o ABSTENTION SET (`abstention_set.json`): perguntas
+plausíveis que NÃO têm resposta no acervo. Golden set mede o acerto quando a
+resposta existe; abstenção mede a recusa quando ela não existe. Sem o segundo,
+o "Não encontrei" é uma promessa não medida — e ele é a identidade do produto.
 """
 import json
 import re
@@ -26,7 +31,12 @@ from app.chain import build_chain
 from app.retriever import get_retriever
 
 GOLDEN = Path(__file__).parent / "golden_set.json"
+ABSTENTION = Path(__file__).parent / "abstention_set.json"
 KEYS = ["faithfulness", "answer_relevancy", "context_precision", "context_recall"]
+
+# Mesmo critério do guardrail de saída (app/guardrails.py): a recusa é o texto
+# que o system prompt manda o modelo devolver quando o contexto não sustenta.
+REFUSAL = "não encontrei"
 
 JUDGE = ChatAnthropic(model="claude-sonnet-4-6", temperature=0)
 
@@ -60,6 +70,31 @@ def judge(question: str, contexts: list[str], answer: str, ground_truth: str) ->
     return {k: max(0.0, min(1.0, float(data.get(k, 0.0)))) for k in KEYS}
 
 
+def run_abstention(chain) -> tuple[int, int]:
+    """Mede a taxa de abstenção: o sistema recusa quando não tem a resposta?
+
+    Não usa LLM-juiz. O critério é binário e verificável: a resposta contém a
+    frase de recusa? Falso negativo aqui (o modelo responde algo) é o pior erro
+    possível num RAG documental, porque a alucinação sai com cara de citação.
+    """
+    perguntas = json.loads(ABSTENTION.read_text(encoding="utf-8"))
+    print(f"\n\nAbstenção — {len(perguntas)} perguntas SEM resposta no acervo...\n")
+    acertos = 0
+    for i, item in enumerate(perguntas, 1):
+        q = item["question"]
+        try:
+            answer = chain.invoke(q)
+        except Exception as e:
+            print(f"  [{i}/{len(perguntas)}] ERRO: {type(e).__name__} — {q[:50]}")
+            continue
+        recusou = REFUSAL in answer.lower()
+        acertos += recusou
+        print(f"  [{i}/{len(perguntas)}] {'RECUSOU ' if recusou else 'RESPONDEU'} | {q[:52]}")
+        if not recusou:
+            print(f"       ↳ vazou: {answer[:110].strip()}")
+    return acertos, len(perguntas)
+
+
 def main():
     golden = [g for g in json.loads(GOLDEN.read_text(encoding="utf-8"))
               if g.get("ground_truth", "").strip()]
@@ -89,6 +124,10 @@ def main():
     print(f"\n==== MÉDIAS (golden set de {ok} perguntas) ====")
     for k in KEYS:
         print(f"  {k:18} {totals[k]/ok:.3f}")
+
+    acertos, total = run_abstention(chain)
+    print(f"\n==== ABSTENÇÃO ({total} perguntas fora do corpus) ====")
+    print(f"  taxa de recusa     {acertos}/{total} = {acertos/total:.3f}")
 
 
 if __name__ == "__main__":

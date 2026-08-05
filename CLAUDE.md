@@ -35,8 +35,9 @@ RAGAS (avaliação) · Docker.
 | `app/guardrails.py` | 4 | `validate_input` (injection) + `validate_output` (grounding). |
 | `app/observability.py` | 5 | Handler do Langfuse. |
 | `app/main.py` | 0/3/4 | FastAPI: `/health` e `POST /ask` — junta as fases num fluxo. |
-| `eval/golden_set.json` | 6 | Perguntas + respostas esperadas (expandir para 10–15). |
-| `eval/run.py` | 6 | Roda o golden set e mede com RAGAS (4 métricas). |
+| `eval/golden_set.json` | 6 | Perguntas + respostas esperadas (15, todas com resposta no acervo). |
+| `eval/abstention_set.json` | 6 | 6 perguntas SEM resposta no acervo. Mede a recusa, não o acerto. |
+| `eval/run.py` | 6 | Roda golden set (4 métricas via LLM-juiz) + taxa de abstenção. |
 
 ## Decisão de arquitetura que importa
 
@@ -96,6 +97,31 @@ Melhorias: trocar `PyPDFDirectoryLoader` (sunset); k maior/re-ranking; enxugar i
 Ligar o Docker: `colima start` (motor já instalado).
 
 Ativar o ambiente: `source .venv/bin/activate` (ou usar `./.venv/bin/python`).
+
+**rev-1.1 (05/08/2026) — precisão do README + medição de abstenção.** Conjunto de
+abstenção criado (6 perguntas fora do corpus) e integrado ao `make eval`; README corrigido
+(chunk é caractere e não token; escala de 9 chunks com k=4 declarada; limitações ampliadas).
+**Pendência única:** rodar `make eval` para publicar a taxa de abstenção. Bloqueado porque
+o Supabase do projeto está inacessível (`tenant/user not found` = projeto pausado; a conta
+é a `fonte@donadaolabs.com`, não a org principal). Ao voltar: `make eval`, colar o número no
+README e no CHANGELOG, então commit + push.
+
+## Fatos técnicos verificados (para defender em entrevista)
+
+Medidos no banco e no código em 05/08/2026, não estimados:
+
+- **Embedding:** `text-embedding-3-small`, **1536 dimensões** (confirmado via `vector_dims`).
+- **Corpus indexado:** **9 chunks** na collection `donadao_docs`. Chunk médio 731 caracteres,
+  maior 988, menor 74. Com `k=4`, cada pergunta recebe ~44% do acervo.
+- **Similaridade:** cosseno (`DistanceStrategy.COSINE` é o default do `langchain-postgres`).
+- **Índices existentes:** btree nas PKs e GIN em `cmetadata`. **Nenhum índice vetorial**, e
+  não é possível criar: a coluna é `vector` sem dimensão e o pgvector responde
+  `column does not have dimensions` (reproduzido). Exige `ALTER TABLE ... TYPE vector(1536)`.
+- **Metadados por chunk (JSONB):** `source`, `page` (0-based, convertido para 1-based em
+  `chain.py`), `page_label`, `total_pages`, `creator`, `producer`, `creationdate`.
+- **Guardrail de saída é inócuo:** `validate_output` só reprova com `docs` vazio, e com `k`
+  fixo isso nunca ocorre.
+- **Geração é Anthropic; OpenAI só embeda** (a Anthropic não tem modelo de embedding).
 
 ## ⚠️ Aviso de versão
 
