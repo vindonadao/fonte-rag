@@ -109,8 +109,9 @@ publicada no README com a escala declarada.
 verde**, confirmada no log do Actions e conferida direto no Postgres. As 11 falhas seguidas
 de 06/08 a 16/08 eram setup pela metade (projeto pausado + secret `SUPABASE_KEY` ausente),
 não defeito de código. **Risco em aberto:** o GitHub desabilita workflows agendados após 60
-dias sem commit em repositório público, e este é público. Prazo perto de **04/10/2026**;
-qualquer commit zera. Detalhes e comandos de diagnóstico em `KEEP_ALIVE.md`.
+dias sem commit em repositório público, e este é público. A conta é **último push + 60
+dias**: com o push de 16/08/2026, vence perto de **15/10/2026**, e qualquer commit empurra
+a data. Detalhes e comandos de diagnóstico em `KEEP_ALIVE.md`.
 
 **rev-1.4 (16/08/2026) — abstenção medida.** `make eval` rodado com o banco de volta (corpus
 intacto: 9 chunks em `donadao_docs`). **Abstenção 6/6 = 1.000.** Golden set de 15 perguntas:

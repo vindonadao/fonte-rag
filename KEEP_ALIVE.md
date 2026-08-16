@@ -102,8 +102,10 @@ não fica vermelho, ele simplesmente **para de existir**. Sem job não há e-mai
 e o banco pausa 7 dias depois sem ninguém ser avisado.
 
 O Fonte é exatamente o perfil de risco: repositório **público** (a regra só vale para
-públicos) e sem desenvolvimento contínuo, porque a prova pública é o `demo.mp4`. Contando
-do último commit, o prazo vence perto de **04/10/2026**.
+públicos) e sem desenvolvimento contínuo, porque a prova pública é o `demo.mp4`.
+
+A conta é sempre **último push + 60 dias**. Com o push de 16/08/2026, o prazo corrente
+vence perto de **15/10/2026**. Qualquer commit novo empurra a data para frente.
 
 Duas saídas, e vale escolher uma antes da data:
 
