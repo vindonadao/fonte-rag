@@ -2,6 +2,28 @@
 
 Produto de IA da Donadão Labs. Versionamento por revisões (`rev-X.Y`).
 
+## [rev-1.4] — 2026-08-16
+
+### Taxa de abstenção medida (pendência aberta desde a rev-1.1)
+- **`make eval` rodado com o banco de volta.** Corpus intacto após o restore: 9 chunks na
+  collection `donadao_docs`, os mesmos números do CLAUDE.md.
+- **Abstenção: 6/6 = 1.000.** O produto recusou as seis perguntas fora do acervo sem
+  inventar cláusula. Publicado no README **com a escala declarada**: são 6 perguntas, não
+  600, e a ausência nelas é gritante. O caso difícil (resposta que *quase* existe) ainda
+  não está no conjunto, e ficou anotado nas limitações.
+- **Golden set (15 perguntas), rodada de 16/08:** faithfulness 0.977, answer_relevancy
+  0.977, context_precision 0.967, context_recall 0.943.
+- **Achado que virou nota no README:** os scores **variam entre rodadas**. A medição
+  anterior, mesmo corpus e mesmo código, deu 0.983 / 0.967 / 0.957 / 0.940. O retrieval é
+  determinístico; quem varia é o LLM-juiz, mesmo com temperature 0. O README agora pede a
+  leitura em **faixa (0.94 a 0.98)** em vez do terceiro decimal, e a falsa precisão entrou
+  na lista de limitações.
+- **Perda concentrada e estável:** as mesmas duas perguntas puxam a média nas duas rodadas
+  (objeto do contrato e prazo de go-live, `context_recall` de 0.55 a 0.60). É o gap de
+  retrieval já documentado, não ruído.
+- **DoD v0.1:** o item "4 métricas RAGAS rodadas e anotadas no README" agora inclui a
+  medição da recusa, que era a promessa central do produto sem número até hoje.
+
 ## [rev-1.3] — 2026-08-16
 
 ### Keep-alive ligado de verdade (11 falhas seguidas eram setup pela metade)

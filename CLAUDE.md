@@ -101,9 +101,8 @@ Ativar o ambiente: `source .venv/bin/activate` (ou usar `./.venv/bin/python`).
 **rev-1.1 (05/08/2026) — precisão do README + medição de abstenção.** Conjunto de
 abstenção criado (6 perguntas fora do corpus) e integrado ao `make eval`; README corrigido
 (chunk é caractere e não token; escala de 9 chunks com k=4 declarada; limitações ampliadas).
-**Pendência única:** rodar `make eval` para publicar a taxa de abstenção. Estava bloqueado
-pelo Supabase pausado; **desbloqueado em 16/08/2026** (ver rev-1.3). Agora é só: `make eval`,
-colar o número no README e no CHANGELOG, então commit + push.
+**Pendência RESOLVIDA em 16/08/2026** (ver rev-1.4): abstenção medida em **6/6 = 1.000** e
+publicada no README com a escala declarada.
 
 **rev-1.3 (16/08/2026) — keep-alive ligado e validado.** O banco voltou e a tabela-sentinela
 `public.keep_alive` foi criada. O workflow `keep-supabase-alive` teve a **primeira execução
@@ -112,6 +111,15 @@ de 06/08 a 16/08 eram setup pela metade (projeto pausado + secret `SUPABASE_KEY`
 não defeito de código. **Risco em aberto:** o GitHub desabilita workflows agendados após 60
 dias sem commit em repositório público, e este é público. Prazo perto de **04/10/2026**;
 qualquer commit zera. Detalhes e comandos de diagnóstico em `KEEP_ALIVE.md`.
+
+**rev-1.4 (16/08/2026) — abstenção medida.** `make eval` rodado com o banco de volta (corpus
+intacto: 9 chunks em `donadao_docs`). **Abstenção 6/6 = 1.000.** Golden set de 15 perguntas:
+0.977 / 0.977 / 0.967 / 0.943. **Achado importante para entrevista:** os scores variam entre
+rodadas (a anterior deu 0.983 / 0.967 / 0.957 / 0.940 com o mesmo código e o mesmo corpus),
+porque o juiz é um LLM mesmo com temperature 0. O README passou a pedir leitura em **faixa
+(0.94 a 0.98)**, não no terceiro decimal. A perda é estável e concentrada nas mesmas duas
+perguntas (objeto do contrato e prazo de go-live), o que confirma gap de retrieval e não
+ruído.
 
 ⚠️ A `DATABASE_URL` do `.env` está em formato SQLAlchemy (`postgresql+psycopg://`) e leva a
 senha do banco embutida. O `psycopg` puro recusa esse prefixo, então troque por
