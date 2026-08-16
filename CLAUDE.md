@@ -101,10 +101,22 @@ Ativar o ambiente: `source .venv/bin/activate` (ou usar `./.venv/bin/python`).
 **rev-1.1 (05/08/2026) — precisão do README + medição de abstenção.** Conjunto de
 abstenção criado (6 perguntas fora do corpus) e integrado ao `make eval`; README corrigido
 (chunk é caractere e não token; escala de 9 chunks com k=4 declarada; limitações ampliadas).
-**Pendência única:** rodar `make eval` para publicar a taxa de abstenção. Bloqueado porque
-o Supabase do projeto está inacessível (`tenant/user not found` = projeto pausado; a conta
-é a `fonte@donadaolabs.com`, não a org principal). Ao voltar: `make eval`, colar o número no
-README e no CHANGELOG, então commit + push.
+**Pendência única:** rodar `make eval` para publicar a taxa de abstenção. Estava bloqueado
+pelo Supabase pausado; **desbloqueado em 16/08/2026** (ver rev-1.3). Agora é só: `make eval`,
+colar o número no README e no CHANGELOG, então commit + push.
+
+**rev-1.3 (16/08/2026) — keep-alive ligado e validado.** O banco voltou e a tabela-sentinela
+`public.keep_alive` foi criada. O workflow `keep-supabase-alive` teve a **primeira execução
+verde**, confirmada no log do Actions e conferida direto no Postgres. As 11 falhas seguidas
+de 06/08 a 16/08 eram setup pela metade (projeto pausado + secret `SUPABASE_KEY` ausente),
+não defeito de código. **Risco em aberto:** o GitHub desabilita workflows agendados após 60
+dias sem commit em repositório público, e este é público. Prazo perto de **04/10/2026**;
+qualquer commit zera. Detalhes e comandos de diagnóstico em `KEEP_ALIVE.md`.
+
+⚠️ A `DATABASE_URL` do `.env` está em formato SQLAlchemy (`postgresql+psycopg://`) e leva a
+senha do banco embutida. O `psycopg` puro recusa esse prefixo, então troque por
+`postgresql://` antes de conectar, e evite imprimir a URL: ela vaza a senha em mensagem de
+erro.
 
 ## Fatos técnicos verificados (para defender em entrevista)
 

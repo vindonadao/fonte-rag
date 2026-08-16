@@ -2,6 +2,35 @@
 
 Produto de IA da Donadão Labs. Versionamento por revisões (`rev-X.Y`).
 
+## [rev-1.3] — 2026-08-16
+
+### Keep-alive ligado de verdade (11 falhas seguidas eram setup pela metade)
+- **Diagnóstico:** o workflow rodou 11 vezes entre 06/08 e 16/08 e falhou nas 11, com
+  e-mail de falha diário. Não era defeito do keep-alive; era a pendência anotada na
+  rev-1.2 nunca cumprida. Duas causas somadas: o projeto Supabase seguia **pausado**
+  (`curl: (6) Could not resolve host`) e o secret **`SUPABASE_KEY` nunca foi cadastrado**
+  (só o `SUPABASE_URL` estava no repositório, e o log mostrava a variável vazia).
+- **`keep_alive.sql` aplicado:** a tabela `public.keep_alive` não existia no banco
+  restaurado. Criada com a linha `id=1` e as três policies anon (select, insert, update).
+- **Secret `SUPABASE_KEY` gravado** com a anon key (`role: anon`, `ref` conferido no JWT).
+- **Validado em dois caminhos independentes:** log do Actions com
+  `resposta: [{"id":1,"pinged_at":"2026-08-16T10:04:38+00:00"}]` e a mesma marca de tempo
+  lida direto no Postgres. A conferência dupla existe porque job verde sem gravação é o
+  modo de falha que este keep-alive foi desenhado para impedir.
+- **`KEEP_ALIVE.md`:** nova seção "Estado atual" com a data de ativação e a tabela dos
+  passos pulados; passo 4 do setup agora inclui o comando de conferência direto no banco,
+  com o detalhe de que a `DATABASE_URL` está em formato SQLAlchemy
+  (`postgresql+psycopg://`) e o `psycopg` puro recusa o prefixo.
+- **⏳ Risco novo documentado:** o GitHub **desabilita workflows agendados após 60 dias
+  sem atividade no repositório**, e a regra vale para repositórios públicos, que é o caso
+  deste. É o pior modo de falha possível aqui, porque o job some em vez de ficar vermelho,
+  e ninguém recebe e-mail. Prazo estimado a partir do último commit: **~04/10/2026**.
+  Qualquer commit zera a contagem.
+- **Pendência da rev-1.1 desbloqueada:** com o banco de pé, `make eval` volta a rodar. A
+  taxa de abstenção continua **não medida** e ainda precisa ir para o README.
+- **Nada de código mudou.** O workflow e o SQL escritos na rev-1.2 estavam corretos desde
+  o início.
+
 ## [rev-1.2] — 2026-08-05
 
 ### Keep-alive do Supabase (o banco pausou e derrubou a avaliação)
