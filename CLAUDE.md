@@ -122,6 +122,12 @@ porque o juiz é um LLM mesmo com temperature 0. O README passou a pedir leitura
 perguntas (objeto do contrato e prazo de go-live), o que confirma gap de retrieval e não
 ruído.
 
+**rev-1.5 (20/10/2026) — o risco de 60 dias se confirmou e foi fechado.** O GitHub desligou
+o keep-alive (`disabled_inactivity`) e o banco pausou. O workflow agora religa a si mesmo pela
+API a cada execução (`PUT .../workflows/keep-alive.yml/enable`, com `actions: write`), o que
+zera o contador sem depender de commit. Cadência subiu para 4x/dia com retry, igual à frota.
+Restaurar o projeto é manual, na conta `fonte@donadaolabs.com`.
+
 ⚠️ A `DATABASE_URL` do `.env` está em formato SQLAlchemy (`postgresql+psycopg://`) e leva a
 senha do banco embutida. O `psycopg` puro recusa esse prefixo, então troque por
 `postgresql://` antes de conectar, e evite imprimir a URL: ela vaza a senha em mensagem de

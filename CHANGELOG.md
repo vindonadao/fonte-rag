@@ -2,6 +2,22 @@
 
 Produto de IA da Donadão Labs. Versionamento por revisões (`rev-X.Y`).
 
+## [rev-1.5] — 2026-10-20
+
+### Keep-alive que não se desliga sozinho
+- **O banco pausou de novo, e desta vez a culpa foi do GitHub.** Agendamentos de repositório
+  público são desligados depois de 60 dias sem commit (`disabled_inactivity`). O último commit
+  era de 16/08, então o keep-alive parou calado em meados de outubro e o Supabase pausou.
+- **Novo primeiro passo no `keep-alive.yml`:** a cada execução o workflow religa a si mesmo
+  pela API (`PUT .../workflows/keep-alive.yml/enable`), o que zera o contador de 60 dias. Roda
+  antes do ping e não derruba o job, então funciona mesmo com o banco fora do ar. O
+  `GITHUB_TOKEN` ganhou `actions: write` só para isso.
+- **Cadência igual à do resto da frota:** 4x por dia (02h, 08h, 14h e 20h UTC), com 4 tentativas
+  e intervalo crescente entre elas, mais uma leitura e um GET no `/auth/v1/health`. Continua na
+  chave anon, porque o repositório é público.
+- **Pendente:** restaurar o projeto no painel da conta `fonte@donadaolabs.com`. Depois disso o
+  próximo ping volta a gravar sozinho.
+
 ## [rev-1.4] — 2026-08-16
 
 ### Taxa de abstenção medida (pendência aberta desde a rev-1.1)

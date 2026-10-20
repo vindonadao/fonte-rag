@@ -28,32 +28,98 @@
 #      Job verde sem essa linha seria falso positivo.
 # ============================================================
 
+# CADÊNCIA E AUTO-RELIGAMENTO (rev-1.5, 20/10/2026): 4x/dia + retry,
+# igual ao resto da frota depois da pausa em massa de 18/09/2026, e
+# um passo que religa o próprio workflow (ver comentário no job).
+# ============================================================
+
 name: keep-supabase-alive
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # diariamente, 06:00 UTC
-  workflow_dispatch: {}      # permite rodar manualmente para testar
+    - cron: "0 2,8,14,20 * * *"   # 4x/dia, a cada 6h
+  workflow_dispatch: {}
+
+# Duas execuções simultâneas (cron + disparo manual) não ajudam em nada.
+concurrency:
+  group: keep-alive-${{ github.ref }}
+  cancel-in-progress: false
+
+# actions:write só para o passo de auto-religamento abaixo.
+permissions:
+  contents: read
+  actions: write
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
+      # O GitHub DESLIGA agendamentos de repositório PÚBLICO depois de 60
+      # dias sem commit (estado `disabled_inactivity`). Foi o que aconteceu
+      # aqui em out/2026: o keep-alive parou calado e o banco pausou.
+      # Religar pela API a cada execução zera esse contador. Roda ANTES do
+      # ping e não derruba o job, para funcionar mesmo com o banco fora.
+      - name: Manter o agendamento ativo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/keep-alive.yml/enable" \
+            && echo "agendamento religado (contador de 60 dias zerado)" \
+            || echo "::warning::nao consegui religar o agendamento"
+
       - name: Ping Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          # UPSERT (não PATCH): cria a linha id=1 se não existir e atualiza se existir.
-          # O PATCH ?id=eq.1 exigia policy SELECT p/ "ver" a linha; sem ela o filtro
-          # casava 0 linhas e nada gravava (job VERDE, banco parado). O upsert não
-          # depende de filtro e return=representation confirma a gravação; grep vazio
-          # -> job VERMELHO, aviso antes de o banco pausar.
-          resp=$(curl -fsS -X POST "$SUPABASE_URL/rest/v1/keep_alive" \
-            -H "apikey: $SUPABASE_KEY" \
-            -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" \
-            -H "Prefer: resolution=merge-duplicates,return=representation" \
-            -d "{\"id\":1,\"pinged_at\":\"$(date -u +%FT%TZ)\"}")
+          set -u
+
+          # UPSERT (não PATCH): cria a linha id=1 se faltar e atualiza se existir.
+          # O PATCH antigo dava "0 linhas afetadas" quando a linha não existia,
+          # deixando o job VERDE sem gravar nada. return=representation devolve a
+          # linha gravada; sem ela, o job falha.
+          escrever() {
+            curl -fsS --max-time 25 -X POST "$SUPABASE_URL/rest/v1/keep_alive" \
+              -H "apikey: $SUPABASE_KEY" \
+              -H "Authorization: Bearer $SUPABASE_KEY" \
+              -H "Content-Type: application/json" \
+              -H "Prefer: resolution=merge-duplicates,return=representation" \
+              -d "{\"id\":1,\"pinged_at\":\"$(date -u +%FT%TZ)\"}"
+          }
+
+          # RETRY: logo depois de um Restore o banco aceita conexão mas ainda
+          # derruba a resposta (`curl: (35) Recv failure: Connection reset by
+          # peer`, visto no ORIGEM em 20/09). Isso é banco subindo, não banco
+          # morto, e some em 1-2 min. Sem retry o job fica vermelho à toa.
+          resp=""
+          for tentativa in 1 2 3 4; do
+            if resp=$(escrever) && printf '%s' "$resp" | grep -q "pinged_at"; then
+              echo "escrita ok na tentativa $tentativa"
+              break
+            fi
+            resp=""
+            espera=$((tentativa * 20))
+            echo "tentativa $tentativa falhou; nova tentativa em ${espera}s"
+            sleep "$espera"
+          done
+
           echo "resposta: $resp"
-          echo "$resp" | grep -q "pinged_at" || { echo "::error::keep-alive NAO gravou a linha"; exit 1; }
+          if [ -z "$resp" ]; then
+            echo "::error::keep-alive NAO gravou a linha apos 4 tentativas"
+            exit 1
+          fi
+
+          # Atividade complementar: um write só, uma vez ao dia, não bastou.
+          # Estes requests custam zero minuto a mais e variam o tipo de acesso
+          # (leitura de tabela + serviço de auth). Não derrubam o job: o
+          # critério de sucesso continua sendo a escrita acima.
+          echo "--- atividade complementar ---"
+          curl -fsS --max-time 15 \
+            "$SUPABASE_URL/rest/v1/keep_alive?select=id,pinged_at&id=eq.1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" || echo "(leitura falhou, seguindo)"
+          echo
+          curl -fsS --max-time 15 "$SUPABASE_URL/auth/v1/health" \
+            -H "apikey: $SUPABASE_KEY" || echo "(auth health falhou, seguindo)"
+          echo
